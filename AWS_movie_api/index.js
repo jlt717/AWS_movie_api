@@ -1,23 +1,26 @@
 require("dotenv").config();
 const express = require("express");
-const fs = require('fs')
-const fileUpload = require('express-fileupload');
-const { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand } = require('@aws-sdk/client-s3');
-
+const fs = require("fs");
+const fileUpload = require("express-fileupload");
+const {
+  S3Client,
+  PutObjectCommand,
+  ListObjectsV2Command,
+  GetObjectCommand,
+} = require("@aws-sdk/client-s3");
 const app = express();
 const morgan = require("morgan");
 
 const s3Client = new S3Client({
-  region: 'us-east-1',
-  endpoint: 'http://localhost:4566',
-  forcePathStyle: true
-})
+  region: "us-east-1",
+  endpoint: "http://localhost:4566",
+  forcePathStyle: true,
+});
 const listObjectsParams = {
-  Bucket: 'my-bucket-for-uploading-retrieving-listing-objects'
-}
-listObjectsCmd = new ListObjectsV2Command(listObjectsParams)
-s3Client.send(listObjectsCmd)
-s3.listObjectsV2(listObjectsCmd)
+  Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+};
+listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
+s3Client.send(listObjectsCmd);
 
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -50,28 +53,49 @@ app.use(morgan("common"));
 let auth = require("./auth")(app);
 require("./passport");
 
-
-app.post("/upload", async (req, res) => {
+app.post("/upload/:movieTitle", async (req, res) => {
   const { image } = req.files; // Assuming you're using express-fileupload
+  const movieTitle = req.params.movieTitle;
+
+  // Assuming the file path is specified in the movies.json file
+  const filePath = "AWS_movie_api/movies.json";
+
+  // Read the movies.json file to get the list of movies
+  const moviesData = fs.readFileSync(filePath, "utf-8");
+  const movies = JSON.parse(moviesData);
+
+  // Find the movie with the specified title
+  const selectedMovie = movies.find((movie) => movie.Title === movieTitle);
+
+  if (!selectedMovie) {
+    return res.status(404).send("Movie not found");
+  }
+
+  // Extract the image URL from the selected movie object
+  const imageURL = selectedMovie.ImageURL;
+
+  // Assuming the images are stored locally in the "public/images" directory
+  const localImagePath = `public/images/${imageURL.split('/').pop()}`;
 
   const params = {
-    Bucket: 'my-bucket-for-uploading-retrieving-listing-objects', // Update with your S3 bucket name
-    Key: image.name,
-    Body: image.data,
+    Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
+    Key: imageURL.split('/').pop(), // Use the image file name as the S3 key
+    Body: fs.createReadStream(localImagePath),
   };
 
   try {
     const data = await s3Client.send(new PutObjectCommand(params));
-    console.log("Successfully uploaded image to S3:", data);
-    res.status(200).send("Image uploaded successfully");
+    console.log(`Successfully uploaded image  for ${selectedMovie.Title} to S3:`, data);
+    res.status(200).send(`Image for ${selectedMovie.Title} uploaded successfully`);
   } catch (error) {
-    console.error("Error uploading image to S3:", error);
+    console.error(`Error uploading image for ${selectedMovie.Title} to S3:`, error);
     res.status(500).send("Error uploading image to S3");
   }
 });
+
 app.get("/list", async (req, res) => {
   const params = {
-    Bucket: 'my-bucket-for-uploading-retrieving-listing-objects', // Update with your S3 bucket name
+    Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
   };
 
   try {
@@ -86,14 +110,14 @@ app.get("/list", async (req, res) => {
 app.get("/retrieve/:key", async (req, res) => {
   const key = req.params.key;
   const params = {
-    Bucket: 'my-bucket-for-uploading-retrieving-listing-objects', // Update with your S3 bucket name
+    Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
     Key: key,
   };
 
   try {
     const data = await s3Client.send(new GetObjectCommand(params));
     console.log("Retrieved object from S3:", data);
-    res.status(200).send(data.Body.toString('utf-8'));
+    res.status(200).send(data.Body.toString("utf-8"));
   } catch (error) {
     console.error("Error retrieving object from S3:", error);
     res.status(500).send("Error retrieving object from S3");
