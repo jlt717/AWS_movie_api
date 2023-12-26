@@ -11,17 +11,8 @@ const {
 const app = express();
 const morgan = require("morgan");
 
-const AWS = require('aws-sdk');
-// AWS.config.update({
-//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//   region: process.env.AWS_REGION,
-// });
-
 const s3Client = new S3Client({
   region: "us-east-1",
-  endpoint: "http://localhost:4566",
-  forcePathStyle: true,
 });
 const listObjectsParams = {
   Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
@@ -93,7 +84,7 @@ app.post("/upload/:movieTitle", async (req, res) => {
   try {
     const data = await s3Client.send(new PutObjectCommand(params));
     console.log(
-      `Successfully uploaded image  for ${selectedMovie.Title} to S3:`,
+      `Successfully uploaded image for ${selectedMovie.Title} to S3:`,
       data
     );
     res
@@ -109,10 +100,6 @@ app.post("/upload/:movieTitle", async (req, res) => {
 });
 
 app.get("/list", async (req, res) => {
-  const params = {
-    Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-  };
-
   try {
     const data = await s3Client.send(new ListObjectsV2Command(params));
     console.log("Objects in S3 bucket:", data.Contents);
