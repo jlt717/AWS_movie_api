@@ -34,7 +34,12 @@ exports.handler = async (event) => {
 
   try {
     await s3Client.send(new CopyObjectCommand(copyObjectParams));
-
+    const getObjectParams = {
+      Bucket: sourceBucket,
+      Key: sourceKey,
+    };
+    const { Body: imageData } = await s3Client.send(new GetObjectCommand(getObjectParams));
+    
     // Resize the image using sharp.
     const resizedImage = await sharp(Buffer.from(imageData))
       .resize({ width: 100, height: 100 })
