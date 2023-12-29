@@ -8,7 +8,7 @@ const sharp = require("sharp");
 exports.handler = async (event) => {
   const region = event.Records[0].awsRegion;
   const sourceBucket = event.Records[0].s3.bucket.name;
-  const sourceKey = event.Rgit add /ecords[0].s3.object.key;
+  const sourceKey = event.Records[0].s3.object.key;
 
   // Check if the object has the correct prefix.
   const prefixToProcess = "original-images/";
