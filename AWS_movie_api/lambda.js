@@ -6,7 +6,6 @@ const {
 const sharp = require("sharp");
 
 exports.handler = async (event) => {
-  // Read data from the event object.
   const region = event.Records[0].awsRegion;
   const sourceBucket = event.Records[0].s3.bucket.name;
   const sourceKey = event.Records[0].s3.object.key;
@@ -34,7 +33,6 @@ exports.handler = async (event) => {
   };
 
   try {
-    // Execute object copy between buckets.
     await s3Client.send(new CopyObjectCommand(copyObjectParams));
 
     // Resize the image using sharp.
@@ -53,13 +51,13 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify("Image resized and uploaded successfully"),
+      body: JSON.stringify("Image resized successfully"),
     };
   } catch (error) {
     console.error("Error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify("Error resizing and uploading image"),
+      body: JSON.stringify("Error resizing image"),
     };
   }
 };
