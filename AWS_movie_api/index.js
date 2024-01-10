@@ -44,7 +44,7 @@ app.use((req, res, next) => {
   console.log(req.body);
   next();
 });
-
+app.use(fileUpload());
 app.use(express.static("public"));
 app.use(morgan("common"));
 
@@ -55,24 +55,24 @@ app.post("/upload/:movieTitle", async (req, res) => {
   const { image } = req.files; // Assuming you're using express-fileupload
   const movieTitle = req.params.movieTitle;
 
-  // Assuming the file path is specified in the movies.json file
+  //Assuming the file path is specified in the movies.json file
   const filePath = "AWS_movie_api/movies.json";
 
-  // Read the movies.json file to get the list of movies
+  //Read the movies.json file to get the list of movies
   const moviesData = fs.readFileSync(filePath, "utf-8");
   const movies = JSON.parse(moviesData);
 
-  // Find the movie with the specified title
+  //Find the movie with the specified title
   const selectedMovie = movies.find((movie) => movie.Title === movieTitle);
 
   if (!selectedMovie) {
     return res.status(404).send("Movie not found");
   }
 
-  // Extract the image URL from the selected movie object
+  //Extract the image URL from the selected movie object
   const imageURL = selectedMovie.ImageURL;
 
-  // Assuming the images are stored locally in the "public/images" directory
+  //Assuming the images are stored locally in the "public/images" directory
   const localImagePath = `public/images/${imageURL.split("/").pop()}`;
 
   const params = {
@@ -101,7 +101,11 @@ app.post("/upload/:movieTitle", async (req, res) => {
 
 app.get("/list", async (req, res) => {
   try {
-    const data = await s3Client.send(new ListObjectsV2Command(params));
+    const data = await s3Client.send(
+      new ListObjectsV2Command({
+        Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      })
+    );
     console.log("Objects in S3 bucket:", data.Contents);
     res.status(200).json(data.Contents);
   } catch (error) {
@@ -109,6 +113,7 @@ app.get("/list", async (req, res) => {
     res.status(500).send("Error listing objects in S3");
   }
 });
+
 app.get("/retrieve/:key", async (req, res) => {
   const key = req.params.key;
   const params = {
@@ -263,26 +268,60 @@ app.put(
 app.post(
   "/users/:Username/movies/:MovieID",
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    User.findOneAndUpdate(
-      { _id: req.user._id },
-      {
-        $addToSet: { FavoriteMovies: req.params.MovieID },
-      },
-      { new: true }
-    )
-      .then(() => {
-        res
-          .status(200)
-          .send(
-            req.params.MovieID + " was added to your Favorite Movies list."
-          );
-      })
-      .catch((err) => {
-        res.status(500).send("Error: " + err);
+  async (req, res) => {
+    try {
+      await User.findOneAndUpdate(
+        { _id: req.user._id },
+        {
+          $addToSet: { FavoriteMovies: req.params.MovieID },
+        },
+        { new: true }
+      );
+      // Assuming the file path is specified in the movies.json file
+      const filePath = "AWS_movie_api/movies.json";
+      // Read the movies.json file to get the list of movies
+      const moviesData = fs.readFileSync(filePath, "utf-8");
+      const movies = JSON.parse(moviesData);
+
+      // Find the movie with the specified title
+      const selectedMovie = movies.find(
+        (movie) => movie._id === req.params.MovieID
+      );
+
+      if (!selectedMovie) {
+        return res.status(404).send("Movie not found");
+      }
+      // Extract the image URL from the selected movie object
+      const imageURL = selectedMovie.ImageURL;
+
+      // Assuming the images are stored locally in the "public/images" directory
+      const localImagePath = `public/images/${imageURL.split("/").pop()}`;
+
+      // Upload the original image to the S3 bucket's original-images folder
+      const paramsOriginal = {
+        Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
+        Key: `original-images/${imageURL.split("/").pop()}`,
+        Body: fs.createReadStream(localImagePath),
+      };
+
+      const uploadOriginalData = await s3Client.send(
+        new PutObjectCommand(paramsOriginal)
+      );
+      console.log(
+        `Successfully uploaded original image for ${selectedMovie.Title} to S3:`,
+        uploadOriginalData
+      );
+
+      res.status(200).json({
+        message: `${selectedMovie.Title} was added to your Favorite Movies list.`,
       });
+    } catch (error) {
+      console.error("Error: ", error);
+      res.status(500).send("Error: " + error);
+    }
   }
 );
+
 /**
  * Remove a movie from the user's favorite movies list.
  * @name DELETE /users/:Username/movies/:MovieID
