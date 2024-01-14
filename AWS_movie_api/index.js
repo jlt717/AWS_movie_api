@@ -39,7 +39,7 @@ mongoose
 
 app.use(
   cors({
-    origin: "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
+    origin: "*",
     credentials: true,
   })
 );
