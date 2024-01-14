@@ -37,7 +37,12 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
