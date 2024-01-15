@@ -9,6 +9,13 @@ const {
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
 const app = express();
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  })
+);
+app.options("*", cors());
 const morgan = require("morgan");
 
 const s3Client = new S3Client({
@@ -37,12 +44,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-app.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  })
-);
 app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
