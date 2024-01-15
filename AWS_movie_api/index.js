@@ -7,7 +7,11 @@ const corsOptions = {
   origin: "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
 };
 const app = express();
-app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  console.log("Executing CORS middleware");
+  cors(corsOptions)(req, res, next);
+});
+//app.use(cors(corsOptions));
 const {
   S3Client,
   PutObjectCommand,
