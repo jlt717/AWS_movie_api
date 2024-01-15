@@ -4,7 +4,7 @@ const fs = require("fs");
 const fileUpload = require("express-fileupload");
 const cors = require("cors");
 const corsOptions = {
-  origin: "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
+  origin: "*",
 };
 const app = express();
 app.use(cors(corsOptions));
