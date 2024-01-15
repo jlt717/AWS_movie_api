@@ -2,22 +2,20 @@ require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
 const fileUpload = require("express-fileupload");
+const cors = require("cors");
+const corsOptions = {
+  origin: "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
+};
+const app = express();
+app.use(cors(corsOptions));
 const {
   S3Client,
   PutObjectCommand,
   ListObjectsV2Command,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
-const app = express();
-app.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  })
-);
-app.options("*", cors());
-const morgan = require("morgan");
 
+const morgan = require("morgan");
 const s3Client = new S3Client({
   region: "us-east-1",
 });
@@ -28,7 +26,7 @@ listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
 
 const mongoose = require("mongoose");
-const cors = require("cors");
+
 const bodyParser = require("body-parser");
 
 const { check, validationResult } = require("express-validator");
