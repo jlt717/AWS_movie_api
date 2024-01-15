@@ -1,13 +1,10 @@
 require("dotenv").config();
 const express = require("express");
+const app = express();
+const cors = require("cors");
+app.use(cors());
 const fs = require("fs");
 const fileUpload = require("express-fileupload");
-const cors = require("cors");
-const corsOptions = {
-  origin: "*",
-};
-const app = express();
-app.use(cors(corsOptions));
 const {
   S3Client,
   PutObjectCommand,
