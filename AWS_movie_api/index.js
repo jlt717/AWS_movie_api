@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
-app.use(cors());
+
 const fs = require("fs");
 const fileUpload = require("express-fileupload");
 const {
@@ -13,6 +13,14 @@ const {
 } = require("@aws-sdk/client-s3");
 
 const morgan = require("morgan");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
+const { check, validationResult } = require("express-validator");
+const { Movie, User } = require("./models.js");
+const passport = require("passport");
+
 const s3Client = new S3Client({
   region: "us-east-1",
 });
@@ -21,14 +29,6 @@ const listObjectsParams = {
 };
 listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
-
-const mongoose = require("mongoose");
-
-const bodyParser = require("body-parser");
-
-const { check, validationResult } = require("express-validator");
-const { Movie, User } = require("./models.js");
-const passport = require("passport");
 
 console.log("MongoDB Connection URI:", process.env.CONNECTION_URI);
 mongoose
@@ -39,6 +39,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
