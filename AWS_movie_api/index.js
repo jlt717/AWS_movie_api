@@ -39,7 +39,7 @@ mongoose
 
 const ALLOWED_ORIGINS = [
   "http://localhost:1234",
-  "http://Test-ALB-645470673.us-east-1.elb.amazonaws.com",
+  "http://10.0.0.62",
   "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
 ];
 
