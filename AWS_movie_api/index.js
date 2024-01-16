@@ -14,7 +14,6 @@ const morgan = require("morgan");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-
 const { check, validationResult } = require("express-validator");
 const { Movie, User } = require("./models.js");
 const passport = require("passport");
@@ -39,7 +38,7 @@ mongoose
 
 const ALLOWED_ORIGINS = [
   "http://localhost:1234",
-  "http://10.0.0.62",
+  "http://44.194.249.43",
   "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
 ];
 
