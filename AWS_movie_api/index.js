@@ -1,6 +1,16 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const morgan = require("morgan");
+
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
+const { check, validationResult } = require("express-validator");
+const { Movie, User } = require("./models.js");
+const passport = require("passport");
+
 const fs = require("fs");
 const fileUpload = require("express-fileupload");
 const {
@@ -9,14 +19,6 @@ const {
   ListObjectsV2Command,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
-
-const morgan = require("morgan");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const { check, validationResult } = require("express-validator");
-const { Movie, User } = require("./models.js");
-const passport = require("passport");
 
 const s3Client = new S3Client({
   region: "us-east-1",
@@ -36,24 +38,25 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:1234",
-  "http://3.221.50.49",
-  "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
-];
+//const ALLOWED_ORIGINS = [
+//"http://localhost:1234",
+//"http://10.0.0.62",
+//"http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
+//];
 
-app.use(
-  cors({
-    credentials: true,
-    origin: function (origin, callback) {
-      if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-  })
-);
+// app.use(
+//   cors({
+//     credentials: true,
+//     origin: function (origin, callback) {
+//       if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//   })
+// );
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
