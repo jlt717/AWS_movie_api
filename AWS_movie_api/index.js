@@ -57,6 +57,7 @@ mongoose
 //   })
 // );
 app.use(cors());
+app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
