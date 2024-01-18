@@ -38,25 +38,24 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-//const ALLOWED_ORIGINS = [
-//"http://localhost:1234",
-//"http://10.0.0.62",
-//"http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
-//];
+const ALLOWED_ORIGINS = [
+  "http://localhost:1234",
+  "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
+];
 
-// app.use(
-//   cors({
-//     credentials: true,
-//     origin: function (origin, callback) {
-//       if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//   })
-// );
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: function (origin, callback) {
+      if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  })
+);
+//app.use(cors());
 app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.json());
