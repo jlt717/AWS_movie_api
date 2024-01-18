@@ -38,10 +38,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:1234",
-  "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com",
-];
+const ALLOWED_ORIGINS = ["*"];
 
 app.use(
   cors({
