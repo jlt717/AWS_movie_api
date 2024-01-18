@@ -38,21 +38,21 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Error connecting to MongoDB:", err));
 
-const ALLOWED_ORIGINS = ["*"];
+// const ALLOWED_ORIGINS = ["*"];
 
-app.use(
-  cors({
-    credentials: true,
-    origin: function (origin, callback) {
-      if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-  })
-);
-//app.use(cors());
+// app.use(
+//   cors({
+//     credentials: true,
+//     origin: function (origin, callback) {
+//       if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//   })
+// );
+app.use(cors());
 app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.json());
