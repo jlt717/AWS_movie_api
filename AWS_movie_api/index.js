@@ -11,6 +11,15 @@ const { check, validationResult } = require("express-validator");
 const { Movie, User } = require("./models.js");
 const passport = require("passport");
 
+console.log("MongoDB Connection URI:", process.env.CONNECTION_URI);
+mongoose
+  .connect(process.env.CONNECTION_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("Error connecting to MongoDB:", err));
+
 const fs = require("fs");
 const fileUpload = require("express-fileupload");
 const {
@@ -29,32 +38,23 @@ const listObjectsParams = {
 listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
 
-console.log("MongoDB Connection URI:", process.env.CONNECTION_URI);
-mongoose
-  .connect(process.env.CONNECTION_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("Error connecting to MongoDB:", err));
+//const ALLOWED_ORIGINS = ["*"];
 
-const ALLOWED_ORIGINS = ["*"];
-
-app.use(
-  cors({
-    credentials: true,
-    origin: function (origin, callback) {
-      if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-  })
-);
-//app.use(cors());
+// app.use(
+//   cors({
+//     credentials: true,
+//     origin: function (origin, callback) {
+//       if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//   })
+// );
+app.use(cors());
 app.options("*", cors());
-app.use(bodyParser.json());
+//app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
   console.log(req.body);
