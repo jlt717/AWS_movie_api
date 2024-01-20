@@ -39,7 +39,7 @@ listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
 
 app.use(cors());
-//app.options("*", cors());
+app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
