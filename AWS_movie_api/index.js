@@ -58,7 +58,7 @@ app.post("/upload/:movieTitle", async (req, res) => {
   const movieTitle = req.params.movieTitle;
 
   //Assuming the file path is specified in the movies.json file
-  const filePath = "AWS_movie_api/movies.json";
+  const filePath = "./movies.json";
 
   //Read the movies.json file to get the list of movies
   const moviesData = fs.readFileSync(filePath, "utf-8");
