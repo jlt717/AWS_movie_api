@@ -38,27 +38,7 @@ const listObjectsParams = {
 listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
 
-//const ALLOWED_ORIGINS = ["*"];
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*'); // Adjust the origin based on your requirements
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
-
-// app.use(
-//   cors({
-//     credentials: true,
-//     origin: function (origin, callback) {
-//       if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//   })
-// );
-//app.use(cors());
+app.use(cors());
 //app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.json());
