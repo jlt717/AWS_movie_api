@@ -10,7 +10,7 @@ const bodyParser = require("body-parser");
 const { check, validationResult } = require("express-validator");
 const { Movie, User } = require("./models.js");
 const passport = require("passport");
-const path = require("path");
+//const path = require("path");
 
 console.log("MongoDB Connection URI:", process.env.CONNECTION_URI);
 mongoose
@@ -59,11 +59,11 @@ app.post("/upload/:movieTitle", async (req, res) => {
   const movieTitle = req.params.movieTitle;
 
   //Assuming the file path is specified in the movies.json file
-  //const filePath = "./movies.json";
-  const filePath = path.join(__dirname, "movies.json");
-  if (!fs.existsSync(filePath)) {
-    return res.status(500).send("Movies file not found");
-  }
+  const filePath = "./movies.json";
+  // const filePath = path.join(__dirname, "movies.json");
+  // if (!fs.existsSync(filePath)) {
+  //   return res.status(500).send("Movies file not found");
+  // }
 
   //Read the movies.json file to get the list of movies
   const moviesData = fs.readFileSync(filePath, "utf-8");
@@ -305,22 +305,22 @@ app.post(
       const localImagePath = `public/images/${imageURL.split("/").pop()}`;
 
       // Upload the original image to the S3 bucket's original-images folder
-      const originalImagesFolder = "original-images";
+      //const originalImagesFolder = "original-images";
       const paramsOriginal = {
         Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-        Key: `${originalImagesFolder}/${imageURL.split("/").pop()}`,
-        // Key: `original-images/${imageURL.split("/").pop()}`,
+        //Key: `${originalImagesFolder}/${imageURL.split("/").pop()}`,
+        Key: `original-images/${imageURL.split("/").pop()}`,
         Body: fs.createReadStream(localImagePath),
       };
 
       // Ensure that the folder exists
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-          Key: `${originalImagesFolder}/`, // Note the trailing slash
-          Body: "",
-        })
-      );
+      // await s3Client.send(
+      //   new PutObjectCommand({
+      //     Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      //     Key: `${originalImagesFolder}/`, // Note the trailing slash
+      //     Body: "",
+      //   })
+      // );
 
       const uploadOriginalData = await s3Client.send(
         new PutObjectCommand(paramsOriginal)
