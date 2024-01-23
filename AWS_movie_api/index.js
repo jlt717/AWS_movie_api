@@ -40,7 +40,7 @@ listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
 
 const corsOptions = {
-  origin: ["http://localhost:1234", "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com"],
+  origin: "*",
   methods: "GET,PUT,POST,DELETE",
   allowedHeaders: "*",
   exposedHeaders: "Access-Control-Allow-Origin",
