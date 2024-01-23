@@ -39,23 +39,9 @@ const listObjectsParams = {
 listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
 
-const corsOptions = {
-  origin: "*",
-  methods: "GET,PUT,POST,DELETE",
-  allowedHeaders: "*",
-  exposedHeaders: "Access-Control-Allow-Origin",
-  maxAge: 3000,
-};
-app.use((req, res, next) => {
-  console.log("Request Headers:", req.headers);
-  next();
-});
-
-app.use(cors(corsOptions));
-
 //app.use(cors(corsOptions));
 
-//app.use(cors());
+app.use(cors());
 //app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.json());
