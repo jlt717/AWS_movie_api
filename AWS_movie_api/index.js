@@ -59,7 +59,7 @@ app.post("/upload/:movieTitle", async (req, res) => {
   const movieTitle = req.params.movieTitle;
 
   //Assuming the file path is specified in the movies.json file
-  const filePath = "./movies.json";
+  const filePath = "AWS_movie_api/movies.json";
   // const filePath = path.join(__dirname, "movies.json");
   //if (!fs.existsSync(filePath)) {
   //return res.status(500).send("Movies file not found");
