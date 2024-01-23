@@ -46,8 +46,14 @@ const corsOptions = {
   exposedHeaders: "Access-Control-Allow-Origin",
   maxAge: 3000,
 };
+app.use((req, res, next) => {
+  console.log("Request Headers:", req.headers);
+  next();
+});
 
 app.use(cors(corsOptions));
+
+//app.use(cors(corsOptions));
 
 //app.use(cors());
 //app.options("*", cors());
