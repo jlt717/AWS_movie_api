@@ -39,8 +39,18 @@ const listObjectsParams = {
 listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
 s3Client.send(listObjectsCmd);
 
-app.use(cors());
-app.options("*", cors());
+const corsOptions = {
+  origin: ["http://localhost:1234", "http://aws-frontend-cinedex.s3-website-us-east-1.amazonaws.com"],
+  methods: "GET,PUT,POST,DELETE",
+  allowedHeaders: "*",
+  exposedHeaders: "Access-Control-Allow-Origin",
+  maxAge: 3000,
+};
+
+app.use(cors(corsOptions));
+
+//app.use(cors());
+//app.options("*", cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use((req, res, next) => {
