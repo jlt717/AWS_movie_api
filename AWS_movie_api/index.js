@@ -57,14 +57,15 @@ let auth = require("./auth")(app);
 require("./passport");
 
 app.post("/upload/:movieTitle", async (req, res) => {
+  const movieTitle = req.params.movieTitle;
+  const filePath = "AWS_movie_api/movies.json";
   //const { image } = req.files; // Assuming you're using express-fileupload
   //const movieTitle = req.params.movieTitle;
 
-  const { ImageURL } = selectedMovie;
-  const movieTitle = req.params.movieTitle;
+  //const movieTitle = req.params.movieTitle;
 
   //Assuming the file path is specified in the movies.json file
-  const filePath = "AWS_movie_api/movies.json";
+  //const filePath = "AWS_movie_api/movies.json";
   // const filePath = path.join(__dirname, "movies.json");
   //if (!fs.existsSync(filePath)) {
   //return res.status(500).send("Movies file not found");
@@ -81,6 +82,7 @@ app.post("/upload/:movieTitle", async (req, res) => {
     return res.status(404).send("Movie not found");
   }
 
+  //const { ImageURL } = selectedMovie;
   //Extract the image URL from the selected movie object
   const imageURL = selectedMovie.ImageURL;
 
