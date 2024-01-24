@@ -57,11 +57,11 @@ let auth = require("./auth")(app);
 require("./passport");
 
 app.post("/upload/:movieTitle", async (req, res) => {
-  const { image } = req.files; // Assuming you're using express-fileupload
-  const movieTitle = req.params.movieTitle;
+  //const { image } = req.files; // Assuming you're using express-fileupload
+  //const movieTitle = req.params.movieTitle;
 
-  // const { ImageURL } = selectedMovie;
-  // const movieTitle = req.params.movieTitle;
+  const { ImageURL } = selectedMovie;
+  const movieTitle = req.params.movieTitle;
 
   //Assuming the file path is specified in the movies.json file
   const filePath = "AWS_movie_api/movies.json";
