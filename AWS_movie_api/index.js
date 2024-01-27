@@ -45,7 +45,9 @@ app.use(bodyParser.json());
 app.use(express.json());
 
 app.use((req, res, next) => {
-  console.log(req.body);
+  if (req.body) {
+    console.log(req.body);
+  }
   next();
 });
 
@@ -53,16 +55,16 @@ app.use(express.static("public"));
 app.use(morgan("common"));
 app.use(fileUpload());
 
- // Check if 'image' exists in req.files
- if (!req.files || !req.files.image) {
-  return res.status(400).send("No file uploaded.");
-}
-const { image } = req.files; // Assuming you're using express-fileupload
-
 let auth = require("./auth")(app);
 require("./passport");
 
 app.post("/upload/:movieTitle", async (req, res) => {
+  // Check if 'image' exists in req.files
+  if (!req.files || !req.files.image) {
+    return res.status(400).send("No file uploaded.");
+  }
+  const { image } = req.files; // Assuming you're using express-fileupload
+
   //const movieTitle = req.params.movieTitle;
   //const filePath = "AWS_movie_api/movies.json";
   // const { image } = req.files; // Assuming you're using express-fileupload
