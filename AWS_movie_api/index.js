@@ -90,17 +90,17 @@ app.post("/upload/:movieTitle", async (req, res) => {
   //Assuming the images are stored locally in the "public/images" directory
   const localImagePath = `public/images/${imageURL.split("/").pop()}`;
 
-  const params = {
-    Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-    Key: imageURL.split("/").pop(), // Use the image file name as the S3 key
-    Body: fs.createReadStream(localImagePath),
-  };
-
   // const params = {
   //   Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-  //   Key: `original-images/${imageURL.split("/").pop()}`, // Use "original-images" folder in the S3 bucket
+  //   Key: imageURL.split("/").pop(), // Use the image file name as the S3 key
   //   Body: fs.createReadStream(localImagePath),
   // };
+
+  const params = {
+    Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
+    Key: `original-images/${imageURL.split("/").pop()}`, // Use "original-images" folder in the S3 bucket
+    Body: fs.createReadStream(localImagePath),
+  };
 
   try {
     const data = await s3Client.send(new PutObjectCommand(params));
