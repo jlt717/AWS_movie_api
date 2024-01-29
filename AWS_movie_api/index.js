@@ -104,24 +104,28 @@ app.post("/upload/:movieTitle", async (req, res) => {
       Body: fs.createReadStream(localImagePath),
     };
 
-    //try {
-    const data = await s3Client.send(new PutObjectCommand(params));
-    console.log(
-      `Successfully uploaded image for ${selectedMovie.Title} to S3:`,
-      data
-    );
-    res
-      .status(200)
-      .send(`Image for ${selectedMovie.Title} uploaded successfully`);
+    try {
+      const data = await s3Client.send(new PutObjectCommand(params));
+      console.log(
+        `Successfully uploaded image for ${selectedMovie.Title} to S3:`,
+        data
+      );
+      res
+        .status(200)
+        .send(`Image for ${selectedMovie.Title} uploaded successfully`);
+    } catch (error) {
+      console.error(
+        `Error uploading image for ${selectedMovie.Title} to S3:`,
+        error
+      );
+      console.error("S3 Upload Error Details:", error.$metadata);
+      res.status(500).send("Error uploading image to S3");
+    }
   } catch (error) {
-    console.error(
-      `Error uploading image for ${selectedMovie.Title} to S3:`,
-      error
-    );
-    res.status(500).send("Error uploading image to S3");
+    console.error("An unexpected error occurred:", error);
+    res.status(500).send("Internal Server Error");
   }
 });
-
 app.get("/list", async (req, res) => {
   try {
     const data = await s3Client.send(
