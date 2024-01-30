@@ -59,66 +59,34 @@ app.use(morgan("common"));
 let auth = require("./auth")(app);
 require("./passport");
 
-app.post("/upload/:movieTitle", async (req, res) => {
-  // Check if 'image' exists in req.files
+app.post("/upload/:username", async (req, res) => {
   try {
-    const encodedTitle = encodeURIComponent(req.params.movieTitle);
-    const uploadUrl = `http://2-6-alb-2131326930.us-east-1.elb.amazonaws.com/upload/${encodedTitle}`;
+    const username = req.params.username;
 
+    // Check if 'image' exists in req.files
     if (!req.files || !req.files.image) {
       return res.status(400).send("No file uploaded.");
     }
-    const { image } = req.files; // Assuming you're using express-fileupload
 
-    const movieTitle = req.params.movieTitle;
+    const { image } = req.files;
 
-    //Assuming the file path is specified in the movies.json file
-    const filePath = "AWS_movie_api/movies.json";
-
-    //Read the movies.json file to get the list of movies
-    const moviesData = fs.readFileSync(filePath, "utf-8");
-    const movies = JSON.parse(moviesData);
-
-    //Find the movie with the specified title
-    const selectedMovie = movies.find((movie) => movie.Title === movieTitle);
-
-    if (!selectedMovie) {
-      return res.status(404).send("Movie not found");
-    }
-
-    //Extract the image URL from the selected movie object
-    const imageURL = selectedMovie.ImageURL;
-
-    //Assuming the images are stored locally in the "public/images" directory
-    const localImagePath = `public/images/${imageURL.split("/").pop()}`;
-
-    // const params = {
-    //   Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-    //   Key: imageURL.split("/").pop(), // Use the image file name as the S3 key
-    //   Body: fs.createReadStream(localImagePath),
-    // };
+    // Construct the key for the S3 bucket
+    const key = `original-images/${username}/${image.name}`;
 
     const params = {
-      Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-      Key: `original-images/${imageURL.split("/").pop()}`, // Use "original-images" folder in the S3 bucket
-      Body: fs.createReadStream(localImagePath),
+      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      Key: key,
+      Body: image.data,
     };
 
     try {
-      const data = await s3Client.send(new PutObjectCommand(params));
-      console.log(
-        `Successfully uploaded image for ${selectedMovie.Title} to S3:`,
-        data
-      );
-      res
-        .status(200)
-        .send(`Image for ${selectedMovie.Title} uploaded successfully`);
+      // Upload the original image to S3
+      await s3Client.send(new PutObjectCommand(params));
+
+      // Respond with success message
+      res.status(200).send(`Image for ${username} uploaded successfully`);
     } catch (error) {
-      console.error(
-        `Error uploading image for ${selectedMovie.Title} to S3:`,
-        error
-      );
-      console.error("S3 Upload Error Details:", error.$metadata);
+      console.error("Error uploading image to S3:", error);
       res.status(500).send("Error uploading image to S3");
     }
   } catch (error) {
@@ -126,11 +94,84 @@ app.post("/upload/:movieTitle", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-app.get("/list", async (req, res) => {
+
+//app.post("/upload/:movieTitle", async (req, res) => {
+// Check if 'image' exists in req.files
+// try {
+//   const encodedTitle = encodeURIComponent(req.params.movieTitle);
+//   const uploadUrl = `http://2-6-alb-2131326930.us-east-1.elb.amazonaws.com/upload/${encodedTitle}`;
+
+//   if (!req.files || !req.files.image) {
+//     return res.status(400).send("No file uploaded.");
+//   }
+//   const { image } = req.files; // Assuming you're using express-fileupload
+
+//   const movieTitle = req.params.movieTitle;
+
+//Assuming the file path is specified in the movies.json file
+//const filePath = "AWS_movie_api/movies.json";
+
+//Read the movies.json file to get the list of movies
+//const moviesData = fs.readFileSync(filePath, "utf-8");
+//const movies = JSON.parse(moviesData);
+
+//Find the movie with the specified title
+//const selectedMovie = movies.find((movie) => movie.Title === movieTitle);
+
+//if (!selectedMovie) {
+//return res.status(404).send("Movie not found");
+//}
+
+//Extract the image URL from the selected movie object
+//const imageURL = selectedMovie.ImageURL;
+
+//Assuming the images are stored locally in the "public/images" directory
+//const localImagePath = `public/images/${imageURL.split("/").pop()}`;
+
+// const params = {
+//   Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
+//   Key: imageURL.split("/").pop(), // Use the image file name as the S3 key
+//   Body: fs.createReadStream(localImagePath),
+// };
+
+//     const params = {
+//       Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
+//       Key: `resized-images/${imageURL.split("/").pop()}`, // Use "original-images" folder in the S3 bucket
+//       Body: fs.createReadStream(localImagePath),
+//     };
+
+//     try {
+//       const data = await s3Client.send(new PutObjectCommand(params));
+//       console.log(
+//         `Successfully uploaded image for ${selectedMovie.Title} to S3:`,
+//         data
+//       );
+//       res
+//         .status(200)
+//         .send(`Image for ${selectedMovie.Title} uploaded successfully`);
+//     } catch (error) {
+//       console.error(
+//         `Error uploading image for ${selectedMovie.Title} to S3:`,
+//         error
+//       );
+//       console.error("S3 Upload Error Details:", error.$metadata);
+//       res.status(500).send("Error uploading image to S3");
+//     }
+//   } catch (error) {
+//     console.error("An unexpected error occurred:", error);
+//     res.status(500).send("Internal Server Error");
+//   }
+// });
+
+app.get("/thumbnails/:username", async (req, res) => {
+  const username = req.params.username;
+  const prefix = `resized-images/${username}`;
+
   try {
     const data = await s3Client.send(
       new ListObjectsV2Command({
         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+        Prefix: prefix,
       })
     );
     console.log("Objects in S3 bucket:", data.Contents);
