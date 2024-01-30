@@ -42,7 +42,7 @@ mongoose
 app.use(express.json());
 app.use(fileUpload());
 app.use(cors());
-//app.options("*", cors());
+app.options("*", cors());
 
 app.use(bodyParser.json());
 
