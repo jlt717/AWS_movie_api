@@ -73,7 +73,7 @@ app.post("/upload/:username", async (req, res) => {
     const params = {
       Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
       Key: `original-images/${image.name}`,
-      Body: image.data,
+      Body: fs.createReadStream(localImagePath),
     };
 
     try {
