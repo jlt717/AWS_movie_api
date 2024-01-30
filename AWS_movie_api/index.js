@@ -70,12 +70,9 @@ app.post("/upload/:username", async (req, res) => {
 
     const { image } = req.files;
 
-    // Construct the key for the S3 bucket
-    const key = `original-images/${username}/${image.name}`;
-
     const params = {
       Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-      Key: key,
+      Key: `original-images/${image.name}`,
       Body: image.data,
     };
 
