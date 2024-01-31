@@ -162,20 +162,38 @@ app.post("/upload/:username", async (req, res) => {
 
 app.get("/thumbnails/:username", async (req, res) => {
   const username = req.params.username;
-  const prefix = `resized-images/${username}`;
+  const thumbnailPrefix = `resized-images/${username}`;
 
   try {
     const data = await s3Client.send(
       new ListObjectsV2Command({
         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-        Prefix: prefix,
+        Prefix: thumbnailPrefix,
       })
     );
-    console.log("Objects in S3 bucket:", data.Contents);
+    console.log("Thumbnails in S3 bucket:", data.Contents);
     res.status(200).json(data.Contents);
   } catch (error) {
-    console.error("Error listing objects in S3:", error);
-    res.status(500).send("Error listing objects in S3");
+    console.error("Error listing thumbnails in S3:", error);
+    res.status(500).send("Error listing thumbnails in S3");
+  }
+});
+
+app.get("/profile/:username", async (req, res) => {
+  const username = req.params.username;
+  const profilePictureKey = `profile-images/${username}/profile-image.jpg`;
+
+  try {
+    const params = {
+      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      Key: profilePictureKey,
+    };
+    const data = await s3Client.send(new GetObjectCommand(params));
+    console.log("Retrieved profile picture from S3:", data);
+    res.status(200).send(data.Body.toString("utf-8"));
+  } catch (error) {
+    console.error("Error retrieving profile picture from S3:", error);
+    res.status(500).send("Error retrieving profile picture from S3");
   }
 });
 
