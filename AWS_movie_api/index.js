@@ -171,8 +171,8 @@ app.get("/thumbnails/:username", async (req, res) => {
         Prefix: thumbnailPrefix,
       })
     );
-    console.log("Thumbnails in S3 bucket:", data.Contents);
-    res.status(200).json(data.Contents);
+    console.log("Thumbnails in S3 bucket:", data.Contents || []);
+    res.status(200).json(data.Contents || []);
   } catch (error) {
     console.error("Error listing thumbnails in S3:", error);
     res.status(500).send("Error listing thumbnails in S3");
@@ -189,6 +189,11 @@ app.get("/profile/:username", async (req, res) => {
       Key: profilePictureKey,
     };
     const data = await s3Client.send(new GetObjectCommand(params));
+    if (data.Body) {
+      res.status(200).send(data.Body.toString("utf-8"));
+    } else {
+      res.status(404).send("Profile image not found");
+    }
     console.log("Retrieved profile picture from S3:", data);
     res.status(200).send(data.Body.toString("utf-8"));
   } catch (error) {
