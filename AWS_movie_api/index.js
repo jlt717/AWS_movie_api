@@ -171,13 +171,31 @@ app.get("/thumbnails/:username", async (req, res) => {
         Prefix: thumbnailPrefix,
       })
     );
-    console.log("Thumbnails in S3 bucket:", data.Contents || []);
-    res.status(200).json(data.Contents || []);
+    const imageThumbnails = data.Contents.filter((item) => {
+      // Filter out non-image files
+      return (
+        item.ContentType &&
+        item.ContentType.startsWith("image") &&
+        (item.Key.endsWith(".jpeg") ||
+          item.Key.endsWith(".jpg") ||
+          item.Key.endsWith(".png"))
+      );
+    });
+
+    console.log("Filtered Thumbnails in S3 bucket:", imageThumbnails || []);
+    res.status(200).json(imageThumbnails || []);
   } catch (error) {
     console.error("Error listing thumbnails in S3:", error);
     res.status(500).send("Error listing thumbnails in S3");
   }
 });
+//     console.log("Thumbnails in S3 bucket:", data.Contents || []);
+//     res.status(200).json(data.Contents || []);
+//   } catch (error) {
+//     console.error("Error listing thumbnails in S3:", error);
+//     res.status(500).send("Error listing thumbnails in S3");
+//   }
+// });
 
 app.get("/profile/:username", async (req, res) => {
   const username = req.params.username;
@@ -191,9 +209,15 @@ app.get("/profile/:username", async (req, res) => {
       })
     );
 
-    const latestProfilePicture = data.Contents.reduce((latest, current) => {
-      return current.LastModified > latest.LastModified ? current : latest;
-    }, data.Contents[0]);
+    const latestProfilePicture = data.Contents
+      ? data.Contents.reduce((latest, current) => {
+          return current.LastModified > latest.LastModified ? current : latest;
+        }, data.Contents[0])
+      : null;
+
+    // const latestProfilePicture = data.Contents.reduce((latest, current) => {
+    //   return current.LastModified > latest.LastModified ? current : latest;
+    // }, data.Contents[0]);
 
     if (latestProfilePicture) {
       const params = {
