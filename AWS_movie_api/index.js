@@ -162,7 +162,7 @@ app.post("/upload/:username", async (req, res) => {
 
 app.get("/thumbnails/:username", async (req, res) => {
   const username = req.params.username;
-  const thumbnailPrefix = `resized-images/${username}`;
+  const thumbnailPrefix = `resized-images/${username}/`;
 
   try {
     const data = await s3Client.send(
