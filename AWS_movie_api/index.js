@@ -202,7 +202,7 @@ app.get("/profile/:username", async (req, res) => {
       };
 
       const imageData = await s3Client.send(new GetObjectCommand(params));
-      res.status(200).send(imageData.Body.toString("utf-8"));
+      res.status(200).send(imageData.Body.toString("base64"));
     } else {
       res.status(404).send("Profile image not found");
     }
