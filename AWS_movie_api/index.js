@@ -181,26 +181,53 @@ app.get("/thumbnails/:username", async (req, res) => {
 
 app.get("/profile/:username", async (req, res) => {
   const username = req.params.username;
-  const profilePictureKey = `profile-images/${username}/profile-image.jpg`;
+  const profilePicturePrefix = `profile-images/${username}/`;
 
   try {
-    const params = {
-      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-      Key: profilePictureKey,
-    };
-    const data = await s3Client.send(new GetObjectCommand(params));
-    if (data.Body) {
-      res.status(200).send(data.Body.toString("utf-8"));
+    const data = await s3Client.send(
+      new ListObjectsV2Command({
+        Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+        Prefix: profilePicturePrefix,
+      })
+    );
+
+    const latestProfilePicture = data.Contents.reduce((latest, current) => {
+      return current.LastModified > latest.LastModified ? current : latest;
+    }, data.Contents[0]);
+
+    if (latestProfilePicture) {
+      const params = {
+        Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+        Key: latestProfilePicture.Key,
+      };
+
+      const imageData = await s3Client.send(new GetObjectCommand(params));
+      res.status(200).send(imageData.Body.toString("utf-8"));
     } else {
       res.status(404).send("Profile image not found");
     }
-    console.log("Retrieved profile picture from S3:", data);
-    res.status(200).send(data.Body.toString("utf-8"));
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
     res.status(500).send("Error retrieving profile picture from S3");
   }
 });
+//const params = {
+//Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//Key: profilePictureKey,
+//};
+//     const data = await s3Client.send(new GetObjectCommand(params));
+//     if (data.Body) {
+//       res.status(200).send(data.Body.toString("utf-8"));
+//     } else {
+//       res.status(404).send("Profile image not found");
+//     }
+//     console.log("Retrieved profile picture from S3:", data);
+//     res.status(200).send(data.Body.toString("utf-8"));
+//   } catch (error) {
+//     console.error("Error retrieving profile picture from S3:", error);
+//     res.status(500).send("Error retrieving profile picture from S3");
+//   }
+// });
 
 app.get("/retrieve/:key", async (req, res) => {
   const key = req.params.key;
