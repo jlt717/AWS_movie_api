@@ -274,7 +274,14 @@ app.get("/profile/:username", async (req, res) => {
     res.status(200).send(data.Body);
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
-    res.status(500).send("Error retrieving profile picture from S3");
+    // Handle circular structure by extracting relevant information
+    const errorInfo = {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    };
+    //res.status(500).send("Error retrieving profile picture from S3");
+    res.status(500).json(errorInfo);
   }
 });
 
