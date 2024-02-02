@@ -160,35 +160,35 @@ app.post("/upload/:username", async (req, res) => {
 //   }
 // });
 
-app.get("/thumbnails/:username", async (req, res) => {
-  const username = req.params.username;
-  const thumbnailPrefix = `resized-images/${username}/`;
+// app.get("/thumbnails/:username", async (req, res) => {
+//   const username = req.params.username;
+//   const thumbnailPrefix = `resized-images/${username}/`;
 
-  try {
-    const data = await s3Client.send(
-      new ListObjectsV2Command({
-        Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-        Prefix: thumbnailPrefix,
-      })
-    );
-    const imageThumbnails = data.Contents.filter((item) => {
-      // Filter out non-image files
-      return (
-        item.ContentType &&
-        item.ContentType.startsWith("image") &&
-        (item.Key.endsWith(".jpeg") ||
-          item.Key.endsWith(".jpg") ||
-          item.Key.endsWith(".png"))
-      );
-    });
+//   try {
+//     const data = await s3Client.send(
+//       new ListObjectsV2Command({
+//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//         Prefix: thumbnailPrefix,
+//       })
+//     );
+//     const imageThumbnails = data.Contents.filter((item) => {
+// Filter out non-image files
+//       return (
+//         item.ContentType &&
+//         item.ContentType.startsWith("image") &&
+//         (item.Key.endsWith(".jpeg") ||
+//           item.Key.endsWith(".jpg") ||
+//           item.Key.endsWith(".png"))
+//       );
+//     });
 
-    console.log("Filtered Thumbnails in S3 bucket:", imageThumbnails || []);
-    res.status(200).json(imageThumbnails || []);
-  } catch (error) {
-    console.error("Error listing thumbnails in S3:", error);
-    res.status(500).send("Error listing thumbnails in S3");
-  }
-});
+//     console.log("Filtered Thumbnails in S3 bucket:", imageThumbnails || []);
+//     res.status(200).json(imageThumbnails || []);
+//   } catch (error) {
+//     console.error("Error listing thumbnails in S3:", error);
+//     res.status(500).send("Error listing thumbnails in S3");
+//   }
+// });
 //     console.log("Thumbnails in S3 bucket:", data.Contents || []);
 //     res.status(200).json(data.Contents || []);
 //   } catch (error) {
@@ -197,44 +197,147 @@ app.get("/thumbnails/:username", async (req, res) => {
 //   }
 // });
 
-app.get("/profile/:username", async (req, res) => {
+app.get("/thumbnails/:username", async (req, res) => {
   const username = req.params.username;
-  const profilePicturePrefix = `profile-images/${username}/`;
+  const thumbnailPrefix = `resized-images/${username}/`;
 
   try {
+    // Retrieve all objects with the specified prefix in S3
     const data = await s3Client.send(
       new ListObjectsV2Command({
         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-        Prefix: profilePicturePrefix,
+        Prefix: thumbnailPrefix,
       })
     );
 
-    const latestProfilePicture = data.Contents
-      ? data.Contents.reduce((latest, current) => {
-          return current.LastModified > latest.LastModified ? current : latest;
-        }, data.Contents[0])
-      : null;
+    // Filter out non-image files and construct the response
+    const imageThumbnails = data.Contents.filter((item) => {
+      return (
+        item.ContentType &&
+        item.ContentType.startsWith("image") &&
+        (item.Key.endsWith(".jpeg") ||
+          item.Key.endsWith(".jpg") ||
+          item.Key.endsWith(".png")) &&
+        // Assuming UUID is part of the file name (adjust this based on your naming convention)
+        item.Key.includes(username) // Assuming the username is part of the UUID
+      );
+    });
 
-    // const latestProfilePicture = data.Contents.reduce((latest, current) => {
-    //   return current.LastModified > latest.LastModified ? current : latest;
-    // }, data.Contents[0]);
+    // Send the list of image thumbnails as JSON
+    res.status(200).json(imageThumbnails || []);
+  } catch (error) {
+    console.error("Error listing thumbnails in S3:", error);
+    res.status(500).send("Error listing thumbnails in S3");
+  }
+});
 
-    if (latestProfilePicture) {
-      const params = {
-        Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-        Key: latestProfilePicture.Key,
-      };
+// Function to determine Content-Type based on file extension
+function determineContentType(filename) {
+  // You may need to adjust this logic based on your specific naming convention
+  if (filename.endsWith(".jpeg") || filename.endsWith(".jpg")) {
+    return "image/jpeg";
+  } else if (filename.endsWith(".png")) {
+    return "image/png";
+  } else {
+    // Default to JPEG if the extension is not recognized
+    return "image/jpeg";
+  }
+}
 
-      const imageData = await s3Client.send(new GetObjectCommand(params));
-      res.status(200).send(imageData.Body.toString("base64"));
-    } else {
-      res.status(404).send("Profile image not found");
+app.get("/profile/:username", async (req, res) => {
+  const username = req.params.username;
+
+  try {
+    // Assuming you want to get the latest uploaded image
+    const latestImage = await getLatestImageForUser(username);
+
+    if (!latestImage) {
+      return res.status(404).send("Profile image not found");
     }
+
+    // Determine Content-Type based on file extension
+    const contentType = determineContentType(latestImage.Key);
+
+    // Use the retrieved filename to construct S3 params
+    const params = {
+      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      Key: latestImage.Key,
+    };
+
+    // Fetch the image from S3
+    const data = await s3Client.send(new GetObjectCommand(params));
+
+    // Set appropriate content type for the response (e.g., image/jpeg)
+    res.setHeader("Content-Type", contentType);
+
+    // Send the binary data directly
+    res.status(200).send(data.Body);
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
     res.status(500).send("Error retrieving profile picture from S3");
   }
 });
+
+async function getLatestImageForUser(username) {
+  // Retrieve all objects with the specified prefix in S3
+  const data = await s3Client.send(
+    new ListObjectsV2Command({
+      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      Prefix: `original-images/${username}/`,
+    })
+  );
+
+  // Check if there are contents in the response
+  if (!data.Contents || data.Contents.length === 0) {
+    return null; // No images found
+  }
+
+  // Filter out non-image files and get the latest image based on LastModified
+  const latestImage = data.Contents.reduce((latest, current) => {
+    return current.LastModified > latest.LastModified ? current : latest;
+  }, data.Contents[0]);
+
+  return latestImage;
+}
+
+// app.get("/profile/:username", async (req, res) => {
+//   const username = req.params.username;
+//   const profilePicturePrefix = `profile-images/${username}/`;
+
+//   try {
+//     const data = await s3Client.send(
+//       new ListObjectsV2Command({
+//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//         Prefix: profilePicturePrefix,
+//       })
+//     );
+
+//     const latestProfilePicture = data.Contents
+//       ? data.Contents.reduce((latest, current) => {
+//           return current.LastModified > latest.LastModified ? current : latest;
+//         }, data.Contents[0])
+//       : null;
+
+// const latestProfilePicture = data.Contents.reduce((latest, current) => {
+//   return current.LastModified > latest.LastModified ? current : latest;
+// }, data.Contents[0]);
+
+//     if (latestProfilePicture) {
+//       const params = {
+//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//         Key: latestProfilePicture.Key,
+//       };
+
+//       const imageData = await s3Client.send(new GetObjectCommand(params));
+//       res.status(200).send(imageData.Body.toString("base64"));
+//     } else {
+//       res.status(404).send("Profile image not found");
+//     }
+//   } catch (error) {
+//     console.error("Error retrieving profile picture from S3:", error);
+//     res.status(500).send("Error retrieving profile picture from S3");
+//   }
+// });
 //const params = {
 //Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
 //Key: profilePictureKey,
