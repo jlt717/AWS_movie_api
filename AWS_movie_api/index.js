@@ -210,18 +210,12 @@ app.get("/thumbnails/:username", async (req, res) => {
       })
     );
 
-    // Filter out non-image files and construct the response
-    const imageThumbnails = data.Contents.filter((item) => {
-      return (
-        item.ContentType &&
-        item.ContentType.startsWith("image") &&
-        (item.Key.endsWith(".jpeg") ||
-          item.Key.endsWith(".jpg") ||
-          item.Key.endsWith(".png")) &&
-        // Assuming UUID is part of the file name (adjust this based on your naming convention)
-        item.Key.includes(username) // Assuming the username is part of the UUID
-      );
-    });
+    console.log("Thumbnail images data:", data); // Add this line for debugging
+
+    // Extract Keys (file names) from the retrieved data
+    const imageThumbnails = data.Contents.map((item) => item.Key);
+
+    console.log("Thumbnail file names:", imageThumbnails); // Add this line for debugging
 
     // Send the list of image thumbnails as JSON
     res.status(200).json(imageThumbnails || []);
