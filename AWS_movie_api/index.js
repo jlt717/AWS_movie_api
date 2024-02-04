@@ -265,6 +265,13 @@ app.get("/profile/:username", async (req, res) => {
       error instanceof TypeError &&
       error.message.includes("circular structure")
     ) {
+      // Log specific parts of the error object
+      console.log("Error message:", error.message);
+      console.log("Error name:", error.name);
+      console.log("Error stack:", error.stack);
+
+      // Log specific parts of the data causing the circular reference
+      console.log("Data causing circular reference:", error.data);
       // Handle circular structure by extracting relevant information
       const errorInfo = {
         message: error.message,
