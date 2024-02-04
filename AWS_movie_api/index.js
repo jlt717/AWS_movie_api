@@ -225,6 +225,28 @@ app.get("/thumbnails/:username", async (req, res) => {
   }
 });
 
+async function getLatestImageForUser(username) {
+  // Retrieve all objects with the specified prefix in S3
+  const data = await s3Client.send(
+    new ListObjectsV2Command({
+      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      Prefix: `original-images/${username}/`,
+    })
+  );
+
+  // Check if there are contents in the response
+  if (!data.Contents || data.Contents.length === 0) {
+    return null; // No images found
+  }
+
+  // Filter out non-image files and get the latest image based on LastModified
+  const latestImage = data.Contents.reduce((latest, current) => {
+    return current.LastModified > latest.LastModified ? current : latest;
+  }, data.Contents[0]);
+
+  return latestImage;
+}
+
 app.get("/profile/:username", async (req, res) => {
   const username = req.params.username;
 
@@ -235,7 +257,8 @@ app.get("/profile/:username", async (req, res) => {
       return res.status(404).send("Profile image not found");
     }
 
-    const contentType = determineContentType(latestImage.Key);
+    // Set content type directly to "image/jpeg"
+    const contentType = "image/jpeg";
 
     const params = {
       Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
@@ -253,6 +276,35 @@ app.get("/profile/:username", async (req, res) => {
     res.status(500).send("Error retrieving profile picture from S3");
   }
 });
+
+// app.get("/profile/:username", async (req, res) => {
+//   const username = req.params.username;
+
+//   try {
+//     const latestImage = await getLatestImageForUser(username);
+
+//     if (!latestImage) {
+//       return res.status(404).send("Profile image not found");
+//     }
+
+//     const contentType = determineContentType(latestImage.Key);
+
+//     const params = {
+//       Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//       Key: latestImage.Key,
+//     };
+
+//     const data = await s3Client.send(new GetObjectCommand(params));
+
+//     res.setHeader("Content-Type", contentType);
+//     res.status(200).send(data.Body);
+//   } catch (error) {
+//     console.error("Error retrieving profile picture from S3:", error);
+
+//     // Send a generic error response
+//     res.status(500).send("Error retrieving profile picture from S3");
+//   }
+// });
 
 // // Function to determine Content-Type based on file extension
 // function determineContentType(filename) {
