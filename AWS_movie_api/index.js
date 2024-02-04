@@ -260,9 +260,33 @@ app.get("/profile/:username", async (req, res) => {
     res.status(200).send(image.Body);
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
-    res.status(500).send("Error retrieving profile picture from S3");
+    // Check if the error is a circular structure
+    if (
+      error instanceof TypeError &&
+      error.message.includes("circular structure")
+    ) {
+      // Handle circular structure by extracting relevant information
+      const errorInfo = {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      };
+      res.status(500).json(errorInfo);
+    } else {
+      // Handle non-circular errors
+      const errorInfo = {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      };
+
+      res.status(500).json(errorInfo);
+    }
   }
 });
+//     res.status(500).send("Error retrieving profile picture from S3");
+//   }
+// });
 
 // async function getLatestImageForUser(username) {
 //   // Retrieve all objects with the specified prefix in S3
