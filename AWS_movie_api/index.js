@@ -270,7 +270,8 @@ app.get("/profile/:username", async (req, res) => {
     // Send the binary data directly
     //res.status(200).send(image.Body);
     //res.status(200).json({ data: base64Image });
-    res.status(200).json([image.Key] || []);
+    //res.status(200).json([image.Key] || []);
+    res.status(200).json(image.Key ? [image.Key] : []);
     //res.status(200).json({ data: [image.Key] });
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
