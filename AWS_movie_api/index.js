@@ -227,18 +227,18 @@ app.get("/thumbnails/:username", async (req, res) => {
 
 app.get("/profile/:username", async (req, res) => {
   const username = req.params.username;
-  const resizedImagePrefix = `resized-images/${username}/`;
+  const profileImagePrefix = `profile-images/${username}/`;
 
   try {
     // Retrieve all objects with the specified prefix in S3
     const data = await s3Client.send(
       new ListObjectsV2Command({
         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-        Prefix: resizedImagePrefix,
+        Prefix: profileImagePrefix,
       })
     );
 
-    console.log("Resized images data:", data); // Add this line for debugging
+    console.log("Profile image data:", data); // Add this line for debugging
 
     // Extract the most recently uploaded image based on LastModified
     const latestImage = data.Contents.reduce((latest, current) => {
