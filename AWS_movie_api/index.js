@@ -238,7 +238,7 @@ app.get("/profile/:username", async (req, res) => {
       })
     );
 
-    //console.log("Resized images data:", data); // Add this line for debugging
+    console.log("Resized images data:", data); // Add this line for debugging
 
     // Extract the most recently uploaded image based on LastModified
     const latestImage = data.Contents.reduce((latest, current) => {
@@ -255,11 +255,12 @@ app.get("/profile/:username", async (req, res) => {
     };
 
     const image = await s3Client.send(new GetObjectCommand(params));
-    const base64Image = Buffer.from(image.Body).toString("base64");
+    //const base64Image = Buffer.from(image.Body).toString("base64");
 
     // Send the binary data directly
     //res.status(200).send(image.Body);
-    res.status(200).json({ data: base64Image });
+    //res.status(200).json({ data: base64Image });
+    res.status(200).json([image.Key] || []);
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
     // Check if the error is a circular structure
