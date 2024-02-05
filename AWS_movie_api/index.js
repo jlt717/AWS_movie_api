@@ -240,10 +240,20 @@ app.get("/profile/:username", async (req, res) => {
 
     console.log("Profile image data:", data); // Add this line for debugging
 
+    // Ensure that data.Contents is not undefined before using reduce
+    const latestImage =
+      data.Contents && data.Contents.length > 0
+        ? data.Contents.reduce((latest, current) => {
+            return current.LastModified > latest.LastModified
+              ? current
+              : latest;
+          }, data.Contents[0])
+        : null;
+
     // Extract the most recently uploaded image based on LastModified
-    const latestImage = data.Contents.reduce((latest, current) => {
-      return current.LastModified > latest.LastModified ? current : latest;
-    }, data.Contents[0]);
+    // const latestImage = data.Contents.reduce((latest, current) => {
+    //   return current.LastModified > latest.LastModified ? current : latest;
+    // }, data.Contents[0]);
 
     if (!latestImage) {
       return res.status(404).send("Profile image not found");
@@ -260,7 +270,8 @@ app.get("/profile/:username", async (req, res) => {
     // Send the binary data directly
     //res.status(200).send(image.Body);
     //res.status(200).json({ data: base64Image });
-    res.status(200).json([image.Key] || []);
+    //res.status(200).json([image.Key] || []);
+    res.status(200).json({ data: [image.Key] });
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
     // Check if the error is a circular structure
