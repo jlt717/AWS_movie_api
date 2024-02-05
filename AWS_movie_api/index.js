@@ -261,39 +261,39 @@ app.get("/profile/:username", async (req, res) => {
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
     // Check if the error is a circular structure
-    if (
-      error instanceof TypeError &&
-      error.message.includes("circular structure")
-    ) {
-      // Log specific parts of the error object
-      console.log("Error message:", error.message);
-      console.log("Error name:", error.name);
-      console.log("Error stack:", error.stack);
+    // if (
+    //   error instanceof TypeError &&
+    //   error.message.includes("circular structure")
+    // ) {
+    // Log specific parts of the error object
+    // console.log("Error message:", error.message);
+    // console.log("Error name:", error.name);
+    // console.log("Error stack:", error.stack);
 
-      // Log specific parts of the data causing the circular reference
-      console.log("Data causing circular reference:", error.data);
-      // Handle circular structure by extracting relevant information
-      const errorInfo = {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-      };
-      res.status(500).json(errorInfo);
-    } else {
-      // Handle non-circular errors
-      const errorInfo = {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-      };
+    // Log specific parts of the data causing the circular reference
+    //console.log("Data causing circular reference:", error.data);
+    // Handle circular structure by extracting relevant information
+    //   const errorInfo = {
+    //     message: error.message,
+    //     name: error.name,
+    //     stack: error.stack,
+    //   };
+    //   res.status(500).json(errorInfo);
+    // } else {
+    // Handle non-circular errors
+    //       const errorInfo = {
+    //         message: error.message,
+    //         name: error.name,
+    //         stack: error.stack,
+    //       };
 
-      res.status(500).json(errorInfo);
-    }
+    //       res.status(500).json(errorInfo);
+    //     }
+    //   }
+    // });
+    res.status(500).send("Error retrieving profile picture from S3");
   }
 });
-//     res.status(500).send("Error retrieving profile picture from S3");
-//   }
-// });
 
 // async function getLatestImageForUser(username) {
 //   // Retrieve all objects with the specified prefix in S3
