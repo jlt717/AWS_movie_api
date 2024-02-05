@@ -227,33 +227,33 @@ app.get("/thumbnails/:username", async (req, res) => {
 
 app.get("/profile/:username", async (req, res) => {
   const username = req.params.username;
-  const profileImagePrefix = `profile-images/${username}/`;
+  const resizedImagePrefix = `resized-images/${username}/`;
 
   try {
     // Retrieve all objects with the specified prefix in S3
     const data = await s3Client.send(
       new ListObjectsV2Command({
         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-        Prefix: profileImagePrefix,
+        Prefix: resizedImagePrefix,
       })
     );
 
     console.log("Profile image data:", data); // Add this line for debugging
 
     // Ensure that data.Contents is not undefined before using reduce
-    const latestImage =
-      data.Contents && data.Contents.length > 0
-        ? data.Contents.reduce((latest, current) => {
-            return current.LastModified > latest.LastModified
-              ? current
-              : latest;
-          }, data.Contents[0])
-        : null;
+    // const latestImage =
+    //   data.Contents && data.Contents.length > 0
+    //     ? data.Contents.reduce((latest, current) => {
+    //         return current.LastModified > latest.LastModified
+    //           ? current
+    //           : latest;
+    //       }, data.Contents[0])
+    //     : null;
 
     // Extract the most recently uploaded image based on LastModified
-    // const latestImage = data.Contents.reduce((latest, current) => {
-    //   return current.LastModified > latest.LastModified ? current : latest;
-    // }, data.Contents[0]);
+    const latestImage = data.Contents.reduce((latest, current) => {
+      return current.LastModified > latest.LastModified ? current : latest;
+    }, data.Contents[0]);
 
     if (!latestImage) {
       return res.status(404).send("Profile image not found");
@@ -270,8 +270,8 @@ app.get("/profile/:username", async (req, res) => {
     // Send the binary data directly
     //res.status(200).send(image.Body);
     //res.status(200).json({ data: base64Image });
-    //res.status(200).json([image.Key] || []);
-    res.status(200).json({ data: [image.Key] });
+    res.status(200).json([image.Key] || []);
+    //res.status(200).json({ data: [image.Key] });
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
     // Check if the error is a circular structure
