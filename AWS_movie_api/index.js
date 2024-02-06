@@ -250,18 +250,29 @@ app.get("/profile/:username", async (req, res) => {
     //       }, data.Contents[0])
     //     : null;
 
+    // Extract the most recently uploaded image
+    const sortedObjects = data.Contents.sort(
+      (a, b) => b.LastModified - a.LastModified
+    );
+    //const latestImage = data.Contents[0];
+    const latestImage = sortedObjects[0];
+
     // Extract the most recently uploaded image based on LastModified
-    const latestImage = data.Contents.reduce((latest, current) => {
-      return current.LastModified > latest.LastModified ? current : latest;
-    }, data.Contents[0]);
+    // const latestImage = data.Contents.reduce((latest, current) => {
+    //   return current.LastModified > latest.LastModified ? current : latest;
+    // }, data.Contents[0]);
 
     if (!latestImage) {
       return res.status(404).send("Profile image not found");
     }
 
     // URL encode the S3 object key (filename)
-    const encodedKey = encodeURIComponent(latestImage.Key);
-    const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${encodedKey}`;
+    //const encodedKey = encodeURIComponent(latestImage.Key);
+    //const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${encodedKey}`;
+
+    // URL decode the S3 object key (filename)
+    const decodedKey = decodeURIComponent(latestImage.Key);
+    const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${decodedKey}`;
 
     const params = {
       Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
