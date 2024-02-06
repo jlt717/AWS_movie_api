@@ -259,10 +259,14 @@ app.get("/profile/:username", async (req, res) => {
       return res.status(404).send("Profile image not found");
     }
 
-    const params = {
-      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-      Key: latestImage.Key,
-    };
+    // URL encode the S3 object key (filename)
+    const encodedKey = encodeURIComponent(latestImage.Key);
+    const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${encodedKey}`;
+
+    // const params = {
+    //   Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+    //   Key: latestImage.Key,
+    // };
 
     const image = await s3Client.send(new GetObjectCommand(params));
     //const base64Image = Buffer.from(image.Body).toString("base64");
@@ -271,7 +275,8 @@ app.get("/profile/:username", async (req, res) => {
     //res.status(200).send(image.Body);
     //res.status(200).json({ data: base64Image });
     //res.status(200).json([image.Key] || []);
-    res.status(200).json(image.Key ? [image.Key] : []);
+    res.status(200).json([imageUrl]);
+    //res.status(200).json(image.Key ? [image.Key] : []);
     //res.status(200).json({ data: [image.Key] });
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
