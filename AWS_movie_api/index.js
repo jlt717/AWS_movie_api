@@ -263,10 +263,10 @@ app.get("/profile/:username", async (req, res) => {
     const encodedKey = encodeURIComponent(latestImage.Key);
     const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${encodedKey}`;
 
-    // const params = {
-    //   Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-    //   Key: latestImage.Key,
-    // };
+    const params = {
+      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+      Key: latestImage.Key,
+    };
 
     const image = await s3Client.send(new GetObjectCommand(params));
     //const base64Image = Buffer.from(image.Body).toString("base64");
