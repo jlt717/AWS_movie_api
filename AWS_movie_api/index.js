@@ -63,7 +63,7 @@ app.post("/upload/:username", async (req, res) => {
   try {
     const username = req.params.username;
 
-    // Check if 'image' exists in req.files
+    // Check if image exists in req.files
     if (!req.files || !req.files.image) {
       return res.status(400).send("No file uploaded.");
     }
@@ -80,7 +80,6 @@ app.post("/upload/:username", async (req, res) => {
       // Upload the original image to S3
       await s3Client.send(new PutObjectCommand(params));
 
-      // Respond with success message
       res.status(200).send(`Image for ${username} uploaded successfully`);
     } catch (error) {
       console.error("Error uploading image to S3:", error);
@@ -91,111 +90,6 @@ app.post("/upload/:username", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-//app.post("/upload/:movieTitle", async (req, res) => {
-// Check if 'image' exists in req.files
-// try {
-//   const encodedTitle = encodeURIComponent(req.params.movieTitle);
-//   const uploadUrl = `http://2-6-alb-2131326930.us-east-1.elb.amazonaws.com/upload/${encodedTitle}`;
-
-//   if (!req.files || !req.files.image) {
-//     return res.status(400).send("No file uploaded.");
-//   }
-//   const { image } = req.files; // Assuming you're using express-fileupload
-
-//   const movieTitle = req.params.movieTitle;
-
-//Assuming the file path is specified in the movies.json file
-//const filePath = "AWS_movie_api/movies.json";
-
-//Read the movies.json file to get the list of movies
-//const moviesData = fs.readFileSync(filePath, "utf-8");
-//const movies = JSON.parse(moviesData);
-
-//Find the movie with the specified title
-//const selectedMovie = movies.find((movie) => movie.Title === movieTitle);
-
-//if (!selectedMovie) {
-//return res.status(404).send("Movie not found");
-//}
-
-//Extract the image URL from the selected movie object
-//const imageURL = selectedMovie.ImageURL;
-
-//Assuming the images are stored locally in the "public/images" directory
-//const localImagePath = `public/images/${imageURL.split("/").pop()}`;
-
-// const params = {
-//   Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-//   Key: imageURL.split("/").pop(), // Use the image file name as the S3 key
-//   Body: fs.createReadStream(localImagePath),
-// };
-
-//     const params = {
-//       Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
-//       Key: `resized-images/${imageURL.split("/").pop()}`, // Use "original-images" folder in the S3 bucket
-//       Body: fs.createReadStream(localImagePath),
-//     };
-
-//     try {
-//       const data = await s3Client.send(new PutObjectCommand(params));
-//       console.log(
-//         `Successfully uploaded image for ${selectedMovie.Title} to S3:`,
-//         data
-//       );
-//       res
-//         .status(200)
-//         .send(`Image for ${selectedMovie.Title} uploaded successfully`);
-//     } catch (error) {
-//       console.error(
-//         `Error uploading image for ${selectedMovie.Title} to S3:`,
-//         error
-//       );
-//       console.error("S3 Upload Error Details:", error.$metadata);
-//       res.status(500).send("Error uploading image to S3");
-//     }
-//   } catch (error) {
-//     console.error("An unexpected error occurred:", error);
-//     res.status(500).send("Internal Server Error");
-//   }
-// });
-
-// app.get("/thumbnails/:username", async (req, res) => {
-//   const username = req.params.username;
-//   const thumbnailPrefix = `resized-images/${username}/`;
-
-//   try {
-//     const data = await s3Client.send(
-//       new ListObjectsV2Command({
-//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-//         Prefix: thumbnailPrefix,
-//       })
-//     );
-//     const imageThumbnails = data.Contents.filter((item) => {
-// Filter out non-image files
-//       return (
-//         item.ContentType &&
-//         item.ContentType.startsWith("image") &&
-//         (item.Key.endsWith(".jpeg") ||
-//           item.Key.endsWith(".jpg") ||
-//           item.Key.endsWith(".png"))
-//       );
-//     });
-
-//     console.log("Filtered Thumbnails in S3 bucket:", imageThumbnails || []);
-//     res.status(200).json(imageThumbnails || []);
-//   } catch (error) {
-//     console.error("Error listing thumbnails in S3:", error);
-//     res.status(500).send("Error listing thumbnails in S3");
-//   }
-// });
-//     console.log("Thumbnails in S3 bucket:", data.Contents || []);
-//     res.status(200).json(data.Contents || []);
-//   } catch (error) {
-//     console.error("Error listing thumbnails in S3:", error);
-//     res.status(500).send("Error listing thumbnails in S3");
-//   }
-// });
 
 app.get("/thumbnails/:username", async (req, res) => {
   const username = req.params.username;
@@ -210,12 +104,8 @@ app.get("/thumbnails/:username", async (req, res) => {
       })
     );
 
-    console.log("Thumbnail images data:", data); // Add this line for debugging
-
     // Extract Keys (file names) from the retrieved data
     const imageThumbnails = data.Contents.map((item) => item.Key);
-
-    console.log("Thumbnail file names:", imageThumbnails); // Add this line for debugging
 
     // Send the list of image thumbnails as JSON
     res.status(200).json(imageThumbnails || []);
@@ -238,16 +128,11 @@ app.get("/profile/:username", async (req, res) => {
       })
     );
 
-    console.log("Profile images data:", data); // Add this line for debugging
-
     // Sort the images based on LastModified timestamp
     data.Contents.sort((a, b) => b.LastModified - a.LastModified);
 
     // Select the latest profile image
     const latestProfileImage = data.Contents[0];
-
-    // Extract the most recently uploaded profile image (assuming it's the last item in the list)
-    //const latestProfileImage = data.Contents[data.Contents.length - 1];
 
     if (latestProfileImage) {
       const profileImagePath = latestProfileImage.Key;
@@ -265,164 +150,10 @@ app.get("/profile/:username", async (req, res) => {
   }
 });
 
-// app.get("/profile/:username", async (req, res) => {
-//   const username = req.params.username;
-//   const thumbnailPrefix = `resized-images/${username}/`;
-
-//   try {
-//     // Retrieve all objects with the specified prefix in S3
-//     const data = await s3Client.send(
-//       new ListObjectsV2Command({
-//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-//         Prefix: thumbnailPrefix,
-//       })
-//     );
-
-//     // Sort the list of thumbnail images based on LastModified in descending order
-//     const sortedThumbnails = data.Contents.sort((a, b) =>
-//       a.LastModified < b.LastModified ? 1 : -1
-//     );
-
-//     // Extract the most recent thumbnail (first item in the sorted list)
-//     const mostRecentThumbnail = sortedThumbnails[0];
-
-//     console.log("Most recent thumbnail:", mostRecentThumbnail); // Add this line for debugging
-
-//     // Send the URL of the most recent thumbnail as JSON
-//     res.status(200).json({
-//       profileImageUrl: mostRecentThumbnail ? mostRecentThumbnail.Key : null,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching profile image:", error);
-//     res.status(500).send("Error fetching profile image");
-//   }
-// });
-
-// app.get("/profile/:username", async (req, res) => {
-//   const username = req.params.username;
-//   const resizedImagePrefix = `resized-images/${username}/`;
-
-//   try {
-//     // Retrieve all objects with the specified prefix in S3
-//     const data = await s3Client.send(
-//       new ListObjectsV2Command({
-//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-//         Prefix: resizedImagePrefix,
-//       })
-//     );
-
-//     const sortedObjects = data.Contents.sort(
-//       (a, b) => b.LastModified - a.LastModified
-//     );
-
-//     const latestImage = sortedObjects[0];
-
-//     if (!latestImage) {
-//       return res.status(404).send("Profile image not found");
-//     }
-
-//     const decodedKey = decodeURIComponent(latestImage.Key);
-//     const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${decodedKey}`;
-
-//     res.status(200).json({ profileImagePath: imageUrl });
-//   } catch (error) {
-//     console.error("Error retrieving profile picture from S3:", error);
-//     res.status(500).send("Error retrieving profile picture from S3");
-//   }
-// });
-
-// console.log("Profile image data:", data); // Add this line for debugging
-
-// Ensure that data.Contents is not undefined before using reduce
-// const latestImage =
-//   data.Contents && data.Contents.length > 0
-//     ? data.Contents.reduce((latest, current) => {
-//         return current.LastModified > latest.LastModified
-//           ? current
-//           : latest;
-//       }, data.Contents[0])
-//     : null;
-
-// Extract the most recently uploaded image
-//const sortedObjects = data.Contents.sort(
-// (a, b) => b.LastModified - a.LastModified
-//);
-//const latestImage = data.Contents[0];
-//const latestImage = sortedObjects[0];
-
-// Extract the most recently uploaded image based on LastModified
-// const latestImage = data.Contents.reduce((latest, current) => {
-//   return current.LastModified > latest.LastModified ? current : latest;
-// }, data.Contents[0]);
-
-// if (!latestImage) {
-//   return res.status(404).send("Profile image not found");
-// }
-
-// URL encode the S3 object key (filename)
-//const encodedKey = encodeURIComponent(latestImage.Key);
-//const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${encodedKey}`;
-
-// URL decode the S3 object key (filename)
-// const decodedKey = decodeURIComponent(latestImage.Key);
-// const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${decodedKey}`;
-
-// const params = {
-//   Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-//   Key: latestImage.Key,
-// };
-
-// const image = await s3Client.send(new GetObjectCommand(params));
-//const base64Image = Buffer.from(image.Body).toString("base64");
-
-// Send the binary data directly
-//res.status(200).send(image.Body);
-//res.status(200).json({ data: base64Image });
-//res.status(200).json([image.Key] || []);
-//res.status(200).json([imageUrl]);
-//res.status(200).json(image.Key ? [image.Key] : []);
-//res.status(200).json({ data: [image.Key] });
-//} catch (error) {
-//console.error("Error retrieving profile picture from S3:", error);
-// Check if the error is a circular structure
-// if (
-//   error instanceof TypeError &&
-//   error.message.includes("circular structure")
-// ) {
-// Log specific parts of the error object
-// console.log("Error message:", error.message);
-// console.log("Error name:", error.name);
-// console.log("Error stack:", error.stack);
-
-// Log specific parts of the data causing the circular reference
-//console.log("Data causing circular reference:", error.data);
-// Handle circular structure by extracting relevant information
-//   const errorInfo = {
-//     message: error.message,
-//     name: error.name,
-//     stack: error.stack,
-//   };
-//   res.status(500).json(errorInfo);
-// } else {
-// Handle non-circular errors
-//       const errorInfo = {
-//         message: error.message,
-//         name: error.name,
-//         stack: error.stack,
-//       };
-
-//       res.status(500).json(errorInfo);
-//     }
-//   }
-// });
-// res.status(500).send("Error retrieving profile picture from S3");
-//}
-//});
-
 app.get("/retrieve/:key", async (req, res) => {
   const key = req.params.key;
   const params = {
-    Bucket: "my-bucket-for-uploading-retrieving-listing-objects", // Update with your S3 bucket name
+    Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
     Key: key,
   };
 
