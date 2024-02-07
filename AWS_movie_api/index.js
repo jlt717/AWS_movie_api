@@ -283,10 +283,10 @@ app.get("/profile/:username", async (req, res) => {
     //const base64Image = Buffer.from(image.Body).toString("base64");
 
     // Send the binary data directly
-    //res.status(200).send(image.Body);
+    res.status(200).send(image.Body);
     //res.status(200).json({ data: base64Image });
     //res.status(200).json([image.Key] || []);
-    res.status(200).json([imageUrl]);
+    //res.status(200).json([imageUrl]);
     //res.status(200).json(image.Key ? [image.Key] : []);
     //res.status(200).json({ data: [image.Key] });
   } catch (error) {
