@@ -240,8 +240,14 @@ app.get("/profile/:username", async (req, res) => {
 
     console.log("Profile images data:", data); // Add this line for debugging
 
+    // Sort the images based on LastModified timestamp
+    data.Contents.sort((a, b) => b.LastModified - a.LastModified);
+
+    // Select the latest profile image
+    const latestProfileImage = data.Contents[0];
+
     // Extract the most recently uploaded profile image (assuming it's the last item in the list)
-    const latestProfileImage = data.Contents[data.Contents.length - 1];
+    //const latestProfileImage = data.Contents[data.Contents.length - 1];
 
     if (latestProfileImage) {
       const profileImagePath = latestProfileImage.Key;
