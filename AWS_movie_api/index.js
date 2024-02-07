@@ -238,93 +238,113 @@ app.get("/profile/:username", async (req, res) => {
       })
     );
 
-    console.log("Profile image data:", data); // Add this line for debugging
-
-    // Ensure that data.Contents is not undefined before using reduce
-    // const latestImage =
-    //   data.Contents && data.Contents.length > 0
-    //     ? data.Contents.reduce((latest, current) => {
-    //         return current.LastModified > latest.LastModified
-    //           ? current
-    //           : latest;
-    //       }, data.Contents[0])
-    //     : null;
-
-    // Extract the most recently uploaded image
     const sortedObjects = data.Contents.sort(
       (a, b) => b.LastModified - a.LastModified
     );
-    //const latestImage = data.Contents[0];
-    const latestImage = sortedObjects[0];
 
-    // Extract the most recently uploaded image based on LastModified
-    // const latestImage = data.Contents.reduce((latest, current) => {
-    //   return current.LastModified > latest.LastModified ? current : latest;
-    // }, data.Contents[0]);
+    const latestImage = sortedObjects[0];
 
     if (!latestImage) {
       return res.status(404).send("Profile image not found");
     }
 
-    // URL encode the S3 object key (filename)
-    //const encodedKey = encodeURIComponent(latestImage.Key);
-    //const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${encodedKey}`;
-
-    // URL decode the S3 object key (filename)
     const decodedKey = decodeURIComponent(latestImage.Key);
     const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${decodedKey}`;
 
-    const params = {
-      Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-      Key: latestImage.Key,
-    };
-
-    const image = await s3Client.send(new GetObjectCommand(params));
-    //const base64Image = Buffer.from(image.Body).toString("base64");
-
-    // Send the binary data directly
-    res.status(200).send(image.Body);
-    //res.status(200).json({ data: base64Image });
-    //res.status(200).json([image.Key] || []);
-    //res.status(200).json([imageUrl]);
-    //res.status(200).json(image.Key ? [image.Key] : []);
-    //res.status(200).json({ data: [image.Key] });
+    res.status(200).json({ profileImagePath: imageUrl });
   } catch (error) {
     console.error("Error retrieving profile picture from S3:", error);
-    // Check if the error is a circular structure
-    // if (
-    //   error instanceof TypeError &&
-    //   error.message.includes("circular structure")
-    // ) {
-    // Log specific parts of the error object
-    // console.log("Error message:", error.message);
-    // console.log("Error name:", error.name);
-    // console.log("Error stack:", error.stack);
-
-    // Log specific parts of the data causing the circular reference
-    //console.log("Data causing circular reference:", error.data);
-    // Handle circular structure by extracting relevant information
-    //   const errorInfo = {
-    //     message: error.message,
-    //     name: error.name,
-    //     stack: error.stack,
-    //   };
-    //   res.status(500).json(errorInfo);
-    // } else {
-    // Handle non-circular errors
-    //       const errorInfo = {
-    //         message: error.message,
-    //         name: error.name,
-    //         stack: error.stack,
-    //       };
-
-    //       res.status(500).json(errorInfo);
-    //     }
-    //   }
-    // });
     res.status(500).send("Error retrieving profile picture from S3");
   }
 });
+
+// console.log("Profile image data:", data); // Add this line for debugging
+
+// Ensure that data.Contents is not undefined before using reduce
+// const latestImage =
+//   data.Contents && data.Contents.length > 0
+//     ? data.Contents.reduce((latest, current) => {
+//         return current.LastModified > latest.LastModified
+//           ? current
+//           : latest;
+//       }, data.Contents[0])
+//     : null;
+
+// Extract the most recently uploaded image
+// const sortedObjects = data.Contents.sort(
+//   (a, b) => b.LastModified - a.LastModified
+// );
+//const latestImage = data.Contents[0];
+//const latestImage = sortedObjects[0];
+
+// Extract the most recently uploaded image based on LastModified
+// const latestImage = data.Contents.reduce((latest, current) => {
+//   return current.LastModified > latest.LastModified ? current : latest;
+// }, data.Contents[0]);
+
+// if (!latestImage) {
+//   return res.status(404).send("Profile image not found");
+// }
+
+// URL encode the S3 object key (filename)
+//const encodedKey = encodeURIComponent(latestImage.Key);
+//const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${encodedKey}`;
+
+// URL decode the S3 object key (filename)
+// const decodedKey = decodeURIComponent(latestImage.Key);
+// const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${decodedKey}`;
+
+// const params = {
+//   Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//   Key: latestImage.Key,
+// };
+
+// const image = await s3Client.send(new GetObjectCommand(params));
+//const base64Image = Buffer.from(image.Body).toString("base64");
+
+// Send the binary data directly
+//res.status(200).send(image.Body);
+//res.status(200).json({ data: base64Image });
+//res.status(200).json([image.Key] || []);
+//res.status(200).json([imageUrl]);
+//res.status(200).json(image.Key ? [image.Key] : []);
+//res.status(200).json({ data: [image.Key] });
+//} catch (error) {
+//console.error("Error retrieving profile picture from S3:", error);
+// Check if the error is a circular structure
+// if (
+//   error instanceof TypeError &&
+//   error.message.includes("circular structure")
+// ) {
+// Log specific parts of the error object
+// console.log("Error message:", error.message);
+// console.log("Error name:", error.name);
+// console.log("Error stack:", error.stack);
+
+// Log specific parts of the data causing the circular reference
+//console.log("Data causing circular reference:", error.data);
+// Handle circular structure by extracting relevant information
+//   const errorInfo = {
+//     message: error.message,
+//     name: error.name,
+//     stack: error.stack,
+//   };
+//   res.status(500).json(errorInfo);
+// } else {
+// Handle non-circular errors
+//       const errorInfo = {
+//         message: error.message,
+//         name: error.name,
+//         stack: error.stack,
+//       };
+
+//       res.status(500).json(errorInfo);
+//     }
+//   }
+// });
+// res.status(500).send("Error retrieving profile picture from S3");
+//}
+//});
 
 app.get("/retrieve/:key", async (req, res) => {
   const key = req.params.key;
