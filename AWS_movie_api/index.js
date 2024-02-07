@@ -227,36 +227,103 @@ app.get("/thumbnails/:username", async (req, res) => {
 
 app.get("/profile/:username", async (req, res) => {
   const username = req.params.username;
-  const resizedImagePrefix = `resized-images/${username}/`;
+  const profilePrefix = `resized-images/${username}/`;
 
   try {
     // Retrieve all objects with the specified prefix in S3
     const data = await s3Client.send(
       new ListObjectsV2Command({
         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
-        Prefix: resizedImagePrefix,
+        Prefix: profilePrefix,
       })
     );
 
-    const sortedObjects = data.Contents.sort(
-      (a, b) => b.LastModified - a.LastModified
-    );
+    console.log("Profile images data:", data); // Add this line for debugging
 
-    const latestImage = sortedObjects[0];
+    // Extract the most recently uploaded profile image (assuming it's the last item in the list)
+    const latestProfileImage = data.Contents[data.Contents.length - 1];
 
-    if (!latestImage) {
-      return res.status(404).send("Profile image not found");
+    if (latestProfileImage) {
+      const profileImagePath = latestProfileImage.Key;
+      console.log("Latest profile image path:", profileImagePath);
+
+      // Send the profile image path as JSON
+      res.status(200).json({ profileImagePath });
+    } else {
+      // No profile image found
+      res.status(404).send("Profile image not found");
     }
-
-    const decodedKey = decodeURIComponent(latestImage.Key);
-    const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${decodedKey}`;
-
-    res.status(200).json({ profileImagePath: imageUrl });
   } catch (error) {
-    console.error("Error retrieving profile picture from S3:", error);
-    res.status(500).send("Error retrieving profile picture from S3");
+    console.error("Error fetching profile image in S3:", error);
+    res.status(500).send("Error fetching profile image in S3");
   }
 });
+
+// app.get("/profile/:username", async (req, res) => {
+//   const username = req.params.username;
+//   const thumbnailPrefix = `resized-images/${username}/`;
+
+//   try {
+//     // Retrieve all objects with the specified prefix in S3
+//     const data = await s3Client.send(
+//       new ListObjectsV2Command({
+//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//         Prefix: thumbnailPrefix,
+//       })
+//     );
+
+//     // Sort the list of thumbnail images based on LastModified in descending order
+//     const sortedThumbnails = data.Contents.sort((a, b) =>
+//       a.LastModified < b.LastModified ? 1 : -1
+//     );
+
+//     // Extract the most recent thumbnail (first item in the sorted list)
+//     const mostRecentThumbnail = sortedThumbnails[0];
+
+//     console.log("Most recent thumbnail:", mostRecentThumbnail); // Add this line for debugging
+
+//     // Send the URL of the most recent thumbnail as JSON
+//     res.status(200).json({
+//       profileImageUrl: mostRecentThumbnail ? mostRecentThumbnail.Key : null,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching profile image:", error);
+//     res.status(500).send("Error fetching profile image");
+//   }
+// });
+
+// app.get("/profile/:username", async (req, res) => {
+//   const username = req.params.username;
+//   const resizedImagePrefix = `resized-images/${username}/`;
+
+//   try {
+//     // Retrieve all objects with the specified prefix in S3
+//     const data = await s3Client.send(
+//       new ListObjectsV2Command({
+//         Bucket: "my-bucket-for-uploading-retrieving-listing-objects",
+//         Prefix: resizedImagePrefix,
+//       })
+//     );
+
+//     const sortedObjects = data.Contents.sort(
+//       (a, b) => b.LastModified - a.LastModified
+//     );
+
+//     const latestImage = sortedObjects[0];
+
+//     if (!latestImage) {
+//       return res.status(404).send("Profile image not found");
+//     }
+
+//     const decodedKey = decodeURIComponent(latestImage.Key);
+//     const imageUrl = `http://my-bucket-for-uploading-retrieving-listing-objects.s3.amazonaws.com/${decodedKey}`;
+
+//     res.status(200).json({ profileImagePath: imageUrl });
+//   } catch (error) {
+//     console.error("Error retrieving profile picture from S3:", error);
+//     res.status(500).send("Error retrieving profile picture from S3");
+//   }
+// });
 
 // console.log("Profile image data:", data); // Add this line for debugging
 
@@ -271,9 +338,9 @@ app.get("/profile/:username", async (req, res) => {
 //     : null;
 
 // Extract the most recently uploaded image
-// const sortedObjects = data.Contents.sort(
-//   (a, b) => b.LastModified - a.LastModified
-// );
+//const sortedObjects = data.Contents.sort(
+// (a, b) => b.LastModified - a.LastModified
+//);
 //const latestImage = data.Contents[0];
 //const latestImage = sortedObjects[0];
 
